@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "19524746487",
+    "project_id": "stevens-learn",
+    "storage_bucket": "stevens-learn.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:19524746487:android:bbc07329891568379827f2",
+        "android_client_info": {
+          "package_name": "com.example.stevens_learn"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "19524746487-3c7r8rrl4h9jtf49ii6rv37v6af4tn8h.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB-vpTDythUQzTRSa2u9bTF3XYR6Mld0FY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "19524746487-3c7r8rrl4h9jtf49ii6rv37v6af4tn8h.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
