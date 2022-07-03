@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:stevens_learn/pages/video_upload.dart';
+import 'package:stevens_learn/pages/home/my_videos.dart';
+import 'package:stevens_learn/pages/home/video_upload.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -30,7 +31,7 @@ class _HomePageState extends State<HomePage> {
           child: const Center(child: Text("My Videos")),
           onTap: () {
             Navigator.of(context).push(MaterialPageRoute(builder: ((context) {
-              return const VideoUploadPage();
+              return const MyVideoPage();
             })));
           },
         ),

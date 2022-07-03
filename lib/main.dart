@@ -3,7 +3,6 @@ import 'package:stevens_learn/pages/drills/drills.dart';
 import 'package:stevens_learn/pages/home/home.dart';
 import 'package:stevens_learn/pages/login/login.dart';
 import 'package:stevens_learn/pages/social/social.dart';
-import 'package:stevens_learn/pages/video_upload.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 

@@ -11,7 +11,7 @@ import 'package:flutter/foundation.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-import '../utils/aspect_ratio_video.dart';
+import '../../utils/aspect_ratio_video.dart';
 
 class VideoUploadPage extends StatefulWidget {
   const VideoUploadPage({Key? key}) : super(key: key);
@@ -25,6 +25,8 @@ class _VideoUploadPageState extends State<VideoUploadPage> {
 
   bool isVideo = false;
   XFile? file;
+  bool _needProReview = false;
+  bool _needCommunityReview = false;
   final FocusNode _focusNode = FocusNode();
   final TextEditingController _descriptionController = TextEditingController();
 
@@ -47,7 +49,9 @@ class _VideoUploadPageState extends State<VideoUploadPage> {
       "video_location": videoCloudLocation,
       "description": _descriptionController.text,
       // "location": "TBA"
-      "timestamp": videoTimestamp
+      "timestamp": videoTimestamp,
+      "need_pro_review": _needProReview,
+      "need_community_review": _needCommunityReview
     };
 
     firebaseFirestoreInstance
@@ -189,25 +193,46 @@ class _VideoUploadPageState extends State<VideoUploadPage> {
     }
   }
 
-  List<Widget> description() {
+  List<Widget> video_metadata() {
     return [
-      Padding(
-        padding: const EdgeInsets.only(left: 22, right: 22, top: 6),
-        child: TextField(
-          focusNode: _focusNode,
-          controller: _descriptionController,
-          decoration: const InputDecoration(
-            hintText: "Tell us what is on your mind...",
-            border: OutlineInputBorder(
-                borderRadius: BorderRadius.all(Radius.circular(10))),
-            fillColor: Colors.white,
-            filled: true,
-          ),
-          maxLines: 10,
-          onTap: () {
-            FocusScope.of(context).requestFocus(_focusNode);
-          },
+      TextField(
+        focusNode: _focusNode,
+        controller: _descriptionController,
+        decoration: const InputDecoration(
+          hintText: "Tell us what is on your mind...",
+          border: OutlineInputBorder(
+              borderRadius: BorderRadius.all(Radius.circular(10))),
+          fillColor: Colors.white,
+          filled: true,
         ),
+        maxLines: 10,
+        onTap: () {
+          FocusScope.of(context).requestFocus(_focusNode);
+        },
+      ),
+      Row(
+        children: [
+          Switch(
+              value: _needProReview,
+              onChanged: (bool value) {
+                setState(() {
+                  _needProReview = value;
+                });
+              }),
+          const Text("I want review from the Pros!")
+        ],
+      ),
+      Row(
+        children: [
+          Switch(
+              value: _needCommunityReview,
+              onChanged: (bool value) {
+                setState(() {
+                  _needCommunityReview = value;
+                });
+              }),
+          const Text("I want review from the Community!")
+        ],
       )
     ];
   }
@@ -219,49 +244,63 @@ class _VideoUploadPageState extends State<VideoUploadPage> {
         title: const Text("Upload Video"),
       ),
       body: SingleChildScrollView(
-        child: Column(
-          children: [
-            SizedBox(
-              height: MediaQuery.of(context).size.height * 0.3,
-              child: Center(
-                child:
-                    !kIsWeb && defaultTargetPlatform == TargetPlatform.android
-                        ? FutureBuilder<void>(
-                            future: retrieveLostData(),
-                            builder: (BuildContext context,
-                                AsyncSnapshot<void> snapshot) {
-                              switch (snapshot.connectionState) {
-                                case ConnectionState.none:
-                                case ConnectionState.waiting:
-                                  return const Text(
-                                    'You have not yet picked an image.',
-                                    textAlign: TextAlign.center,
-                                  );
-                                case ConnectionState.done:
-                                  return _previewVideo();
-                                default:
-                                  if (snapshot.hasError) {
-                                    return Text(
-                                      'Pick image/video error: ${snapshot.error}}',
-                                      textAlign: TextAlign.center,
+        child: Padding(
+          padding: const EdgeInsets.only(left: 22, right: 22, top: 6),
+          child: Column(
+            children: [
+              SizedBox(
+                height: MediaQuery.of(context).size.height * 0.3,
+                child: Center(
+                  child:
+                      !kIsWeb && defaultTargetPlatform == TargetPlatform.android
+                          ? FutureBuilder<void>(
+                              future: retrieveLostData(),
+                              builder: (BuildContext context,
+                                  AsyncSnapshot<void> snapshot) {
+                                switch (snapshot.connectionState) {
+                                  case ConnectionState.none:
+                                  case ConnectionState.waiting:
+                                    return Container(
+                                      color: Colors.grey,
+                                      child: const Text(
+                                        'You have not yet picked an image.',
+                                        textAlign: TextAlign.center,
+                                      ),
                                     );
-                                  } else {
-                                    return const Text(
-                                      'You have not yet picked an image.',
-                                      textAlign: TextAlign.center,
-                                    );
-                                  }
-                              }
-                            },
-                          )
-                        : _previewVideo(),
+                                  case ConnectionState.done:
+                                    return _previewVideo();
+                                  default:
+                                    if (snapshot.hasError) {
+                                      return Text(
+                                        'Pick image/video error: ${snapshot.error}}',
+                                        textAlign: TextAlign.center,
+                                      );
+                                    } else {
+                                      return Expanded(
+                                        child: Container(
+                                          color: Colors.grey,
+                                          child: const Text(
+                                            'You have not yet picked an image.',
+                                            textAlign: TextAlign.center,
+                                          ),
+                                        ),
+                                      );
+                                    }
+                                }
+                              },
+                            )
+                          : _previewVideo(),
+                ),
               ),
-            ),
-            Form(
+              Form(
                 child: Column(
-              children: description(),
-            ))
-          ],
+                  children: video_metadata(),
+                ),
+              ),
+              ElevatedButton(
+                  onPressed: _uploadFile, child: const Text("Upload My Video"))
+            ],
+          ),
         ),
       ),
       floatingActionButton: Column(
@@ -293,21 +332,21 @@ class _VideoUploadPageState extends State<VideoUploadPage> {
               child: const Icon(Icons.videocam),
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.only(top: 16.0),
-            child: FloatingActionButton(
-              backgroundColor: Colors.blue,
-              onPressed: () {
-                if (kDebugMode) {
-                  print("Upload!");
-                }
-                _uploadFile();
-              },
-              heroTag: 'uploadVideo',
-              tooltip: 'Upload the Video',
-              child: const Icon(Icons.upload),
-            ),
-          )
+          // Padding(
+          //   padding: const EdgeInsets.only(top: 16.0),
+          //   child: FloatingActionButton(
+          //     backgroundColor: Colors.blue,
+          //     onPressed: () {
+          //       if (kDebugMode) {
+          //         print("Upload!");
+          //       }
+          //       _uploadFile();
+          //     },
+          //     heroTag: 'uploadVideo',
+          //     tooltip: 'Upload the Video',
+          //     child: const Icon(Icons.upload),
+          //   ),
+          // )
         ],
       ),
     );
